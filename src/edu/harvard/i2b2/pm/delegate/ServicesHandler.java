@@ -118,6 +118,10 @@ public class ServicesHandler extends RequestHandler {
 
 	}
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> First cut at CAS patch.
 	protected UserType validateSuppliedPassword (String username, String password, Hashtable param) throws Exception
 	{
 		PMDbDao pmDb = new PMDbDao();
