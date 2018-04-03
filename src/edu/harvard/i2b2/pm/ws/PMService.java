@@ -215,8 +215,9 @@ public class PMService {
 		 */
 
 		OMElement returnElement = null;
-
-
+		
+		System.out.println("+++getPMDataElement++++:"+getPMDataElement);
+		log.debug("+++getPMDataElement++++:"+getPMDataElement);
 		if (getPMDataElement == null) {
 			log.error("Incoming PM request is null");
 			throw new I2B2Exception("Incoming PM request is null");
@@ -225,65 +226,79 @@ public class PMService {
 		Pattern p = Pattern.compile("<password>.+</password>");
 		Matcher m = p.matcher(getPMDataElement.toString());
 		String outString = m.replaceAll("<password>*********</password>");
-
+		System.out.println("+++outString++++:"+outString);
+		log.debug("+++outString++++:"+outString);
 		p = Pattern.compile(">.+</ns9:set_password>");
 		m = p.matcher(outString);
 		outString = m.replaceAll(">*********</ns9:set_password>");
+		System.out.println("+++outString++++:"+outString);
 		log.debug("Received Request PM Element " + outString);
 
 
 		log.debug("Begin getting servicesMsg");
 		ServicesMessage servicesMsg = new ServicesMessage(getPMDataElement.toString());
 		long waitTime = 0;
-
-		if ((servicesMsg.getRequestMessageType() != null) && (servicesMsg.getRequestMessageType().getRequestHeader() != null)) {
-			waitTime = servicesMsg.getRequestMessageType()
-					.getRequestHeader()
-					.getResultWaittimeMs();
+		System.out.println("++servicesMsg.getRequestMessageType()++"+servicesMsg.getRequestMessageType());
+		if (servicesMsg.getRequestMessageType() != null) {
+			System.out.println("++servicesMsg.getRequestMessageType().getRequestHeader()++"+servicesMsg.getRequestMessageType().getRequestHeader());
+			if (servicesMsg.getRequestMessageType().getRequestHeader() != null) {
+				waitTime = servicesMsg.getRequestMessageType()
+				.getRequestHeader()
+				.getResultWaittimeMs();
+			}
 		}
-
+		System.out.println("Completed getting servicesMsg, waittime is: " + waitTime);
 		log.debug("Completed getting servicesMsg, waittime is: " + waitTime);
 
 		//do PM processing inside thread, so that  
 		// service could sends back message with timeout error.
-
+		System.out.println("starting of the thread");
 		String pmDataResponse = null;
 		try {
-			ExecutorRunnable er = new ExecutorRunnable();
-			//er.setInputString(requestElementString);
-			log.debug("begin setRequestHandler, my servicesMsg: " + servicesMsg);
-
+		ExecutorRunnable er = new ExecutorRunnable();
+		//er.setInputString(requestElementString);
+		log.debug("begin setRequestHandler, my servicesMsg: " + servicesMsg);
+		System.out.println("begin setRequestHandler, my servicesMsg: " + servicesMsg);
 		//er.setRequestHandler(new ServicesHandler(servicesMsg));
                 er.setRequestHandler(new ServicesHandlerCAS(servicesMsg));
 		log.debug("middle setRequestHandler");
+		System.out.println("middle setRequestHandler");
+		
+		log.debug("end setRequestHandler");
 
+			try {
+				//if (waitTime > 0) {
+				//	t.wait(waitTime);
+				//} else {
+				//	t.wait();
+				//}
+				System.out.println("thread started");
+				 long startTime = System.currentTimeMillis(); 
+                 long deltaTime = -1; 
+                 while((er.isJobCompleteFlag() == false)&& (deltaTime < waitTime)){ 
+                         if (waitTime > 0) { 
+                                 t.wait(waitTime - deltaTime); 
+                                 deltaTime = System.currentTimeMillis() - startTime; 
+                         } else { 
+                                 t.wait(); 
+                         } 
+                 } 
+				pmDataResponse = er.getOutputString();
 
-			log.debug("end setRequestHandler");
+				if (pmDataResponse == null) {
+					if (er.getJobException() != null) {
+						pmDataResponse = "";
+						throw new I2B2Exception("Portal is not property configured.");
+					} 
+					else if (er.isJobCompleteFlag() == false) {
+						String timeOuterror = "Result waittime millisecond <result_waittime_ms> :" +
+						waitTime +
+						" elapsed, try again with increased value";
+						log.debug(timeOuterror);
 
-
-			Thread t = new Thread(er);
-
-			ResponseMessageType responseMsgType = null;
-
-			synchronized (t) {
-				t.start();
-
-				try {
-					//if (waitTime > 0) {
-					//	t.wait(waitTime);
-					//} else {
-					//	t.wait();
-					//}
-
-					long startTime = System.currentTimeMillis(); 
-					long deltaTime = -1; 
-					while((er.isJobCompleteFlag() == false)&& (deltaTime < waitTime)){ 
-						if (waitTime > 0) { 
-							t.wait(waitTime - deltaTime); 
-							deltaTime = System.currentTimeMillis() - startTime; 
-						} else { 
-							t.wait(); 
-						} 
+						responseMsgType = MessageFactory.doBuildErrorResponse(null,
+								timeOuterror);
+						pmDataResponse = MessageFactory.convertToXMLString(responseMsgType);
 					} 
 					pmDataResponse = er.getOutputString();
 
@@ -315,20 +330,19 @@ public class PMService {
 					t = null;
 				}
 			}
-
-		} catch (Exception e) {
+			catch (Exception e) {
 			log.error("Error: " + e.getMessage());
 			e.printStackTrace();
 		}
-		try {
-			returnElement = MessageFactory.createResponseOMElementFromString(pmDataResponse);
-			log.debug("my pm repsonse is: " + pmDataResponse);
-			log.debug("my return is: " + returnElement);
-		} catch (XMLStreamException e) {
-			log.error("Error creating OMElement from response string " +
-					pmDataResponse, e);
-		}
-
+        try {
+        	System.out.println("my pm repsonse is: " + pmDataResponse);
+            returnElement = MessageFactory.createResponseOMElementFromString(pmDataResponse);
+            log.debug("my pm repsonse is: " + pmDataResponse);
+            log.debug("my return is: " + returnElement);
+        } catch (XMLStreamException e) {
+            log.error("Error creating OMElement from response string " +
+            		pmDataResponse, e);
+        }
 		return returnElement;
 
 	}
