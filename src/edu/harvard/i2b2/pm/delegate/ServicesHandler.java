@@ -358,6 +358,8 @@ public class ServicesHandler extends RequestHandler {
 			//If password begins with "SessionKey:" its a session key and decrypt it and validate it
 			if (password.startsWith("SessionKey:"))
 			{
+				System.out.println("insode session key");
+				getUsername();
 				String sessionKey=password.replace("SessionKey:", "");
 				log.debug("Encrypted Session key: "+sessionKey+" passed in for validation.");
 				if (rmt.getPassword().getTokenMsTimeout() == null)
@@ -400,6 +402,7 @@ public class ServicesHandler extends RequestHandler {
 				//get the user from the service
 				try {
 					log.debug("Validating user: " + rmt.getUsername());
+					System.out.println("Validating user: " + rmt.getUsername());
 					getUsername();
 					UserType user = validateSuppliedPassword( rmt.getUsername(), rmt.getPassword().getValue(), params);
 					uType.setFullName(user.getFullName());
@@ -2118,7 +2121,9 @@ public class ServicesHandler extends RequestHandler {
 
 	private void getUsername()
 	{
+		System.out.println("Inside user name");
 		MessageContext context = MessageContext.getCurrentMessageContext();
+		System.out.println("context:"+context);
 		HttpServletRequest  request = (HttpServletRequest) context.getProperty("transport.http.servletRequest");
 		String ticketVal = null ;
 		try{
