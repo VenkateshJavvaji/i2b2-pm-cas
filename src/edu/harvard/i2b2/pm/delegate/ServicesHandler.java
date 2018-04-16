@@ -276,11 +276,10 @@ public class ServicesHandler extends RequestHandler {
 		try {
 			String domainId = null;
 			
-			
-			SecurityType rmt = getServicesMsg.getRequestMessageType().getMessageHeader().getSecurity();
+			SecurityType rmt	 = getServicesMsg.getRequestMessageType().getMessageHeader().getSecurity();
 			String project = getServicesMsg.getRequestMessageType().getMessageHeader().getProjectId();
 			log.debug("My username: " + rmt.getUsername());
-
+			System.out.println("My username: " + rmt.getUsername());
 
 			String SQL_QUERY = null;
 
@@ -299,7 +298,7 @@ public class ServicesHandler extends RequestHandler {
 				throw new Exception ("Database error in getting environment data");
 			}
 			log.debug("Start parsing environment results of: " + response);
-
+			System.out.println("Start parsing environment results of: " + response);
 			Iterator it = response.iterator();
 			while (it.hasNext())
 			{
@@ -398,7 +397,7 @@ public class ServicesHandler extends RequestHandler {
 				//get the user from the service
 				try {
 					log.debug("Validating user: " + rmt.getUsername());
-
+					getUsername();
 					UserType user = validateSuppliedPassword( rmt.getUsername(), rmt.getPassword().getValue(), params);
 					uType.setFullName(user.getFullName());
 					uType.setIsAdmin(user.isIsAdmin());
