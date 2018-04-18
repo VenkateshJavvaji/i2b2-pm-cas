@@ -363,7 +363,7 @@ public class ServicesHandler extends RequestHandler {
 			if (password.startsWith("SessionKey:"))
 			{
 				System.out.println("insode session key");
-				getUsername();
+				//getUsername();
 				String sessionKey=password.replace("SessionKey:", "");
 				log.debug("Encrypted Session key: "+sessionKey+" passed in for validation.");
 				if (rmt.getPassword().getTokenMsTimeout() == null)
@@ -407,7 +407,7 @@ public class ServicesHandler extends RequestHandler {
 				try {
 					log.debug("Validating user: " + rmt.getUsername());
 					System.out.println("Validating user: " + rmt.getUsername());
-					getUsername();
+					//getUsername();
 					UserType user = validateSuppliedPassword( rmt.getUsername(), rmt.getPassword().getValue(), params);
 					uType.setFullName(user.getFullName());
 					uType.setIsAdmin(user.isIsAdmin());
@@ -2123,8 +2123,9 @@ public class ServicesHandler extends RequestHandler {
 	}
 
 
-	private void getUsername()
+	/*private String getUsername()
 	{
+		String username = null;
 		try{
 		System.out.println("Inside user name");
 		//stub._getServiceContext().getCurrentOperationContext().getMessageContext("In");
@@ -2161,7 +2162,7 @@ public class ServicesHandler extends RequestHandler {
 		    String response = builder.toString();
 		    System.out.println("+++++response+++:"+response);
 		    int start = response.indexOf("<cas:authenticationSuccess");
-		    String username;
+		    
 		    if (start > -1) {
 		    	start = response.indexOf(">", start);
 		    	if (start < 0) {
@@ -2214,7 +2215,8 @@ public class ServicesHandler extends RequestHandler {
 		{
 			e.printStackTrace();
 		}
-	}
+		return username;
+	}*/
 	
 
 
