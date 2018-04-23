@@ -216,8 +216,7 @@ public class PMService {
 
 		OMElement returnElement = null;
 		
-		System.out.println("+++getPMDataElement++++:"+getPMDataElement);
-		log.debug("+++getPMDataElement++++:"+getPMDataElement);
+
 		if (getPMDataElement == null) {
 			log.error("Incoming PM request is null");
 			throw new I2B2Exception("Incoming PM request is null");
@@ -269,7 +268,7 @@ public class PMService {
 				//} else {
 				//	t.wait();
 				//}
-				System.out.println("thread started");
+
 				 long startTime = System.currentTimeMillis(); 
                  long deltaTime = -1; 
                  while((er.isJobCompleteFlag() == false)&& (deltaTime < waitTime)){ 
@@ -332,7 +331,6 @@ public class PMService {
 			e.printStackTrace();
 		}
         try {
-        	System.out.println("my pm repsonse is: " + pmDataResponse);
             returnElement = MessageFactory.createResponseOMElementFromString(pmDataResponse);
             log.debug("my pm repsonse is: " + pmDataResponse);
             log.debug("my return is: " + returnElement);
